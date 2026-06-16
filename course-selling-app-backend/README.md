@@ -55,6 +55,7 @@ c
 
 ## Project Structure
 
+```bash
 course-selling-app-backend/
 │
 ├── middleware/
@@ -74,7 +75,7 @@ course-selling-app-backend/
 ├── package.json
 ├── package-lock.json
 └── README.md
-
+```
 ---
 
 ## Installation
