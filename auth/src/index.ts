@@ -1,4 +1,4 @@
-import { configDotenv } from "dotenv";
+import * as dotenv from 'dotenv';
 import express from 'express';
 import { userRouter } from "./Routes/userRouter.js";
 
