@@ -8,6 +8,7 @@ import { z } from "zod";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../db.js";
+import middleware from "../middleware/middleware.js";
 
 const userRouter = Router();
 
@@ -178,6 +179,45 @@ userRouter.post(
       return res.status(200).json({
         accessToken,
         refreshToken,
+      });
+    } catch (error: unknown) {
+      console.error(error);
+
+      return res.status(500).json({
+        error:
+          error instanceof Error
+            ? error.message
+            : "Internal Server Error",
+      });
+    }
+  }
+);
+
+userRouter.get(
+  "/me",
+  middleware,
+  async (req: Request, res: Response) => {
+    try {
+      const user = await prisma.user.findUnique({
+        where: {
+          id: req.userId,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          createdAt: true,
+        },
+      });
+
+      if (!user) {
+        return res.status(404).json({
+          message: "User not found",
+        });
+      }
+
+      return res.status(200).json({
+        user,
       });
     } catch (error: unknown) {
       console.error(error);
