@@ -1,8 +1,9 @@
 import { Router, } from "express";
 import { z } from "zod";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, {} from "jsonwebtoken";
 import prisma from "../db.js";
+import middleware from "../middleware/middleware.js";
 const userRouter = Router();
 const JWT_ACCESS_TOKEN = process.env.JWT_ACCESS_SECRET;
 if (!JWT_ACCESS_TOKEN) {
@@ -122,6 +123,104 @@ userRouter.post("/signin", validateBody(signinSchema), async (req, res) => {
         });
     }
     catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            error: error instanceof Error
+                ? error.message
+                : "Internal Server Error",
+        });
+    }
+});
+userRouter.get("/me", middleware, async (req, res) => {
+    try {
+        const user = await prisma.user.findUnique({
+            where: {
+                id: req.userId,
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                createdAt: true,
+            },
+        });
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+        return res.status(200).json({
+            user,
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            error: error instanceof Error
+                ? error.message
+                : "Internal Server Error",
+        });
+    }
+});
+userRouter.post("/refresh", async (req, res) => {
+    try {
+        const authorization = req.headers.authorization;
+        if (!authorization) {
+            return res.status(401).json({
+                message: "Refresh token missing",
+            });
+        }
+        const token = authorization.split(" ")[1];
+        if (!token) {
+            return res.status(401).json({
+                message: "Invalid authorization header",
+            });
+        }
+        // Verify refresh token signature + expiry
+        const decoded = jwt.verify(token, JWT_REFRESH_TOKEN);
+        // Validate required payload
+        if (!decoded.userId ||
+            typeof decoded.userId !== "string") {
+            return res.status(401).json({
+                message: "Invalid refresh token payload",
+            });
+        }
+        const userId = decoded.userId;
+        const tokenCheck = await prisma.refreshToken.findUnique({
+            where: {
+                token,
+            },
+        });
+        if (!tokenCheck) {
+            return res.status(401).json({
+                message: "Invalid refresh token",
+            });
+        }
+        if (tokenCheck.userId !== userId) {
+            return res.status(401).json({
+                message: "Invalid refresh token",
+            });
+        }
+        const newAccessToken = jwt.sign({
+            userId,
+        }, JWT_ACCESS_TOKEN, {
+            expiresIn: "15m",
+        });
+        return res.status(200).json({
+            accessToken: newAccessToken,
+        });
+    }
+    catch (error) {
+        if (error instanceof jwt.JsonWebTokenError) {
+            return res.status(401).json({
+                message: "Invalid refresh token",
+            });
+        }
+        if (error instanceof jwt.TokenExpiredError) {
+            return res.status(401).json({
+                message: "Refresh token expired",
+            });
+        }
         console.error(error);
         return res.status(500).json({
             error: error instanceof Error

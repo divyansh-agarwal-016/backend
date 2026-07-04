@@ -6,7 +6,7 @@ import {
 } from "express";
 import { z } from "zod";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { type JwtPayload } from "jsonwebtoken";
 import prisma from "../db.js";
 import middleware from "../middleware/middleware.js";
 
@@ -232,4 +232,98 @@ userRouter.get(
   }
 );
 
+userRouter.post(
+  "/refresh",
+  async (req: Request, res: Response) => {
+    try {
+      const authorization = req.headers.authorization;
+
+      if (!authorization) {
+        return res.status(401).json({
+          message: "Refresh token missing",
+        });
+      }
+
+      const token = authorization.split(" ")[1];
+
+      if (!token) {
+        return res.status(401).json({
+          message: "Invalid authorization header",
+        });
+      }
+
+      // Verify refresh token signature + expiry
+      const decoded = jwt.verify(
+        token,
+        JWT_REFRESH_TOKEN
+      ) as JwtPayload;
+
+      // Validate required payload
+      if (
+        !decoded.userId ||
+        typeof decoded.userId !== "string"
+      ) {
+        return res.status(401).json({
+          message: "Invalid refresh token payload",
+        });
+      }
+
+      const userId = decoded.userId;
+
+      const tokenCheck =
+        await prisma.refreshToken.findUnique({
+          where: {
+            token,
+          },
+        });
+
+      if (!tokenCheck) {
+        return res.status(401).json({
+          message: "Invalid refresh token",
+        });
+      }
+
+      if (tokenCheck.userId !== userId) {
+        return res.status(401).json({
+          message: "Invalid refresh token",
+        });
+      }
+
+      const newAccessToken = jwt.sign(
+        {
+          userId,
+        },
+        JWT_ACCESS_TOKEN,
+        {
+          expiresIn: "15m",
+        }
+      );
+
+      return res.status(200).json({
+        accessToken: newAccessToken,
+      });
+    } catch (error: unknown) {
+      if (error instanceof jwt.JsonWebTokenError) {
+        return res.status(401).json({
+          message: "Invalid refresh token",
+        });
+      }
+
+      if (error instanceof jwt.TokenExpiredError) {
+        return res.status(401).json({
+          message: "Refresh token expired",
+        });
+      }
+
+      console.error(error);
+
+      return res.status(500).json({
+        error:
+          error instanceof Error
+            ? error.message
+            : "Internal Server Error",
+      });
+    }
+  }
+);
 export { userRouter };
