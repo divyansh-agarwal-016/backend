@@ -1,1 +1,1 @@
-{"root":["./src/db.ts","./src/index.ts","./src/Routes/postRouter.ts"],"version":"6.0.3"}
+{"root":["./src/db.ts","./src/index.ts","./src/Routes/postRouter.ts","./src/schemas/postSchema.ts"],"version":"6.0.3"}
