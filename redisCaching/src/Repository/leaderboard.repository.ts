@@ -9,6 +9,15 @@ const leaderboardRepository = {
       },
     });
   },
+
+  async getTopLeaderboard(limit: number) {
+    return await prisma.developer.findMany({
+      orderBy: {
+        score: "desc",
+      },
+      take: limit,
+    });
+  }
 };
 
 export { leaderboardRepository };

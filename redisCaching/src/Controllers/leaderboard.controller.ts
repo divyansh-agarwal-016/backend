@@ -4,6 +4,7 @@ import type {
   updateScehmaType,
 } from "../Schema/leaderboard.schema.js";
 import { leaderboardRepository } from "../Repository/leaderboard.repository.js";
+import { leaderboardService } from "../Services/leaderboard.services.js";
 import type { Request, Response } from "express";
 
 const leaderboardController = {
@@ -27,7 +28,16 @@ const leaderboardController = {
 
   async get(req: Request<{}, {}, queryScehmaType>, res: Response) {
     try {
-      const { limit } = res.locals.body;
+        const { limit } = res.locals.query;
+
+        const leaderboard = await leaderboardService.getTopLeaderboard(
+          Number(limit)
+        );
+  
+        return res.status(200).json({
+          message: "Leaderboard fetched successfully",
+          leaderboard,
+        });
     } catch (error) {
       return res.status(500).json({
         message: "Failed to create leaderboard record",
