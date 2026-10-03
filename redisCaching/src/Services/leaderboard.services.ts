@@ -25,6 +25,8 @@ const leaderboardService = {
 
     return leaderboard;
   },
+
+  async updateLeaderboard( )
 };
 
 export { leaderboardService };

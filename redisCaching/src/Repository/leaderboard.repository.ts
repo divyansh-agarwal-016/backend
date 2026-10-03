@@ -17,7 +17,18 @@ const leaderboardRepository = {
       },
       take: limit,
     });
-  }
+  },
+
+  async updateScore(id: string, score: number) {
+    return await prisma.developer.update({
+      where: {
+        id,
+      },
+      data: {
+        score,
+      },
+    });
+  },
 };
 
 export { leaderboardRepository };

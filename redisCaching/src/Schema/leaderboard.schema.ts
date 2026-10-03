@@ -13,7 +13,7 @@ export const updateScehma = z.object({
   score: z.number().min(1).gt(0),
 });
 
-export const idScehma = z.object({
+export const patchScehma = z.object({
   id: z.string(),
 });
 
@@ -23,7 +23,7 @@ export const querySchema = z.object({
 
 export type createSchemaType = z.infer<typeof createScehma>;
 export type updateScehmaType = z.infer<typeof updateScehma>;
-export type idScehmaType = z.infer<typeof idScehma>;
+export type patchScehmaType = z.infer<typeof patchScehma>;
 export type queryScehmaType = z.infer<typeof querySchema>;
 
 export function validateRequest(
