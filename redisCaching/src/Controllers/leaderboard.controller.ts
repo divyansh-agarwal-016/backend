@@ -1,13 +1,12 @@
 import type {
   createSchemaType,
-  patchScehmaType,
+  IdScehmaType,
   queryScehmaType,
   updateScehmaType,
 } from "../Schema/leaderboard.schema.js";
 import { leaderboardRepository } from "../Repository/leaderboard.repository.js";
 import { leaderboardService } from "../Services/leaderboard.services.js";
 import type { Request, Response } from "express";
-import type path from "node:path";
 
 const leaderboardController = {
   async create(req: Request<{}, {}, createSchemaType>, res: Response) {
@@ -28,7 +27,7 @@ const leaderboardController = {
     }
   },
 
-  async get(req: Request<{}, {}, queryScehmaType>, res: Response) {
+  async get(req: Request<{}, {}, {}, queryScehmaType>, res: Response) {
     try {
       const { limit } = res.locals.query;
 
@@ -48,11 +47,11 @@ const leaderboardController = {
     }
   },
 
-  async update(req: Request<{}, {}, patchScehmaType>, res: Response) {
+  async update(req: Request<IdScehmaType, {}, updateScehmaType>, res: Response) {
     try {
       const { id } = res.locals.params;
       const { score } = res.locals.body;
-      const updateScore = await leaderboardRepository.updateScore(id, score);
+      const updateScore = await leaderboardService.updateScore(id, score);
       return res.status(200).json({
         message: "Score Updated Successfully",
         updateScore,
@@ -64,6 +63,22 @@ const leaderboardController = {
       });
     }
   },
+
+  async delete(req: Request<IdScehmaType, {}, {}>, res: Response){
+    try {
+      const { id } = res.locals.params;
+      const deleteUser = await leaderboardService.deletecacheScore(id);
+      return res.status(200).json({
+        message: "User Deleted Successfully",
+        deleteUser
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Failed to create leaderboard record",
+        error: error instanceof Error ? error.message : "Internal Server Error",
+      });
+    }
+  }
 };
 
 export { leaderboardController };

@@ -1,5 +1,4 @@
 import z from "zod";
-import type { NextFunction, Request, Response } from "express";
 
 export const createScehma = z.object({
   username: z
@@ -13,7 +12,7 @@ export const updateScehma = z.object({
   score: z.number().min(1).gt(0),
 });
 
-export const patchScehma = z.object({
+export const IdScehma = z.object({
   id: z.string(),
 });
 
@@ -23,25 +22,5 @@ export const querySchema = z.object({
 
 export type createSchemaType = z.infer<typeof createScehma>;
 export type updateScehmaType = z.infer<typeof updateScehma>;
-export type patchScehmaType = z.infer<typeof patchScehma>;
+export type IdScehmaType = z.infer<typeof IdScehma>;
 export type queryScehmaType = z.infer<typeof querySchema>;
-
-export function validateRequest(
-  schema: z.ZodType,
-  source: "body" | "query" | "params",
-) {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const result = schema.safeParse(req[source]);
-
-    if (!result.success) {
-      return res.status(400).json({
-        error: "Validation Failed",
-        details: result.error.issues,
-      });
-    }
-
-    res.locals[source] = result.data;
-
-    next();
-  };
-}

@@ -2,11 +2,11 @@ import { Router } from "express";
 import { leaderboardController } from "../Controllers/leaderboard.controller.js";
 import {
   createScehma,
-  patchScehma,
+  IdScehma,
   querySchema,
   updateScehma,
-  validateRequest,
 } from "../Schema/leaderboard.schema.js";
+import { validateRequest } from "../Middlewares/middlewares.js";
 const leaderboardRoutes = Router();
 
 
@@ -25,8 +25,11 @@ leaderboardRoutes.get(
 
 leaderboardRoutes.patch(
   "/:id",
-  validateRequest(patchScehma, "params"),
+  validateRequest(IdScehma, "params"),
   validateRequest(updateScehma, "body"),
   leaderboardController.update,
 );
+
+leaderboardRoutes.delete("/:id", validateRequest(IdScehma, "params"), leaderboardController.delete)
+
 export default leaderboardRoutes;

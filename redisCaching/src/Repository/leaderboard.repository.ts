@@ -29,6 +29,14 @@ const leaderboardRepository = {
       },
     });
   },
+
+  async deleteRecord(id: string) {
+    return await prisma.developer.delete({
+      where: {
+        id,
+      },
+    });
+  },
 };
 
 export { leaderboardRepository };
