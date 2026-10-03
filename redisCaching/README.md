@@ -1,6 +1,3 @@
-Sure. Here is the complete `README.md` content in Markdown format:
-
-```md
 # Redis Leaderboard API
 
 A backend leaderboard system built with Node.js, Express, TypeScript, Prisma, PostgreSQL, and Redis.
@@ -574,4 +571,3 @@ The basic flow is:
 The important trade-off is that caching improves read performance but introduces the problem of keeping cached data consistent with the database.
 
 This project addresses that problem through cache invalidation after updates and deletes.
-```
